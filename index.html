@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ใบบันทึกกระบวนการแก้ปัญหา (Debugging Log)</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="k.jpg">
+
+  <!-- TailwindCSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- ฟอนต์ไทย -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- React + ReactDOM UMD -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <!-- Firebase v9 compat -->
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+  <style>
+    body { 
+      font-family: 'Noto Sans Thai', 'Inter', sans-serif; 
+      background-color: #f8fafc;
+      color: #0f172a;
+    }
+    
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+    }
+    .profile-img {
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50">
+<div id="root"></div>
+
+<script type="text/babel">
+  // --- 1. Firebase Configuration ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyALtj2HWW3bZCPhxJWCaHBlZ9v6r6lneSU",
+    authDomain: "phin-8f61c.firebaseapp.com",
+    databaseURL: "https://phin-8f61c-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "phin-8f61c",
+    storageBucket: "phin-8f61c.firebasestorage.app",
+    messagingSenderId: "819876335927",
+    appId: "1:819876335927:web:7ad4655d717d8cde740ab2"
+  };
+
+  if (!firebase.apps.length) {
+    firebase.initializeApp(firebaseConfig);
+  }
+  const db = firebase.firestore();
+
+  // --- 2. Main App Component ---
+  const App = () => {
+    const [groupName, setGroupName] = React.useState("");
+    const [password, setPassword] = React.useState("");
+    const [isLoggedIn, setIsLoggedIn] = React.useState(false);
+    const [isAdmin, setIsAdmin] = React.useState(false);
+    const [authMsg, setAuthMsg] = React.useState("");
+    const [logs, setLogs] = React.useState([]);
+    const [loading, setLoading] = React.useState(false);
+    const [msg, setMsg] = React.useState("");
+    const [editId, setEditId] = React.useState(null);
+
+    const initialFormState = {
+      mission_name: "",
+      expected_result: "",
+      actual_problem: "",
+      bug_type: "บั๊กคำสั่ง/ตรรกะ (Logic Bug)",
+      solution_action: "",
+      responsible_member: "",
+      reflection: "",
+    };
+    const [form, setForm] = React.useState(initialFormState);
+
+    // --- 3. Functions ---
+
+    const handleLogin = (e) => {
+      e.preventDefault();
+      const group = groupName.trim();
+      if (!group) return;
+
+      if (group.toLowerCase() === "gulcode") {
+        if (password === "kkr1234") {
+          setIsAdmin(true);
+          setIsLoggedIn(true);
+          setAuthMsg("");
+          listenAllLogs();
+        } else {
+          setAuthMsg("รหัสผ่านผู้ดูแลระบบไม่ถูกต้อง");
+        }
+      } else {
+        setIsAdmin(false);
+        setIsLoggedIn(true);
+        setAuthMsg("");
+        listenGroupLogs(group);
+      }
+    };
+
+    const handleLogout = () => {
+      setIsLoggedIn(false);
+      setIsAdmin(false);
+      setGroupName("");
+      setPassword("");
+      setLogs([]);
+      setForm(initialFormState);
+      setEditId(null);
+    };
+
+    const listenGroupLogs = (group) => {
+      setLoading(true);
+      const ref = db.collection("artifacts").doc("KKRHub")
+                    .collection("groups").doc(group)
+                    .collection("debugging_logs")
+                    .orderBy("timestamp", "desc");
+      
+      return ref.onSnapshot(snapshot => {
+        const data = snapshot.docs.map(doc => ({ 
+          id: doc.id, 
+          groupName: group, 
+          ...doc.data() 
+        }));
+        setLogs(data);
+        setLoading(false);
+      }, err => {
+        setMsg("Error: " + err.message);
+        setLoading(false);
+      });
+    };
+
+    const listenAllLogs = () => {
+      setLoading(true);
+      return db.collectionGroup("debugging_logs").onSnapshot(snapshot => {
+        let data = snapshot.docs.map(doc => {
+          const groupRef = doc.ref.parent.parent;
+          return {
+            id: doc.id,
+            groupName: groupRef ? groupRef.id : "Unknown",
+            ...doc.data()
+          };
+        });
+        
+        data.sort((a, b) => {
+          const tA = a.timestamp?.toMillis() || 0;
+          const tB = b.timestamp?.toMillis() || 0;
+          return tB - tA;
+        });
+
+        setLogs(data);
+        setLoading(false);
+      }, err => {
+        setMsg("Admin Error: " + err.message);
+        setLoading(false);
+      });
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      if (isAdmin) return;
+      setMsg(editId ? "กำลังอัปเดต..." : "กำลังบันทึก...");
+      try {
+        const logData = { ...form, timestamp: firebase.firestore.FieldValue.serverTimestamp() };
+        const docRef = db.collection("artifacts").doc("KKRHub")
+                         .collection("groups").doc(groupName)
+                         .collection("debugging_logs");
+        if (editId) {
+          await docRef.doc(editId).update(logData);
+          setEditId(null);
+        } else {
+          await docRef.add(logData);
+        }
+        setForm(initialFormState);
+        setMsg("สำเร็จ! ✨");
+        setTimeout(() => setMsg(""), 3000);
+      } catch (err) {
+        setMsg("ผิดพลาด: " + err.message);
+      }
+    };
+
+    const handleDelete = async (logId, targetGroupName) => {
+      if(!window.confirm(`ต้องการลบบันทึกนี้จากกลุ่ม "${targetGroupName}" ใช่หรือไม่?`)) return;
+      try {
+        await db.collection("artifacts").doc("KKRHub")
+                .collection("groups").doc(targetGroupName)
+                .collection("debugging_logs").doc(logId)
+                .delete();
+        setMsg("ลบข้อมูลเรียบร้อย 🗑️");
+        setTimeout(() => setMsg(""), 3000);
+      } catch (err) {
+        setMsg("ลบไม่สำเร็จ: " + err.message);
+      }
+    };
+
+    const handleEdit = (log) => {
+      setForm({...log});
+      setEditId(log.id);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    const getBugTypeColor = (type) => {
+      if(type.includes("ตรรกะ")) return "bg-blue-100 text-blue-700 border-blue-200";
+      if(type.includes("กายภาพ")) return "bg-orange-100 text-orange-700 border-orange-200";
+      return "bg-purple-100 text-purple-700 border-purple-200";
+    };
+
+    const formatDate = (timestamp) => {
+      if (!timestamp) return 'รอดำเนินการ...';
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      return date.toLocaleString('th-TH', { 
+        day: '2-digit', month: 'short', year: 'numeric', 
+        hour: '2-digit', minute: '2-digit', second: '2-digit'
+      });
+    };
+
+    // --- 4. Render UI ---
+
+    if (!isLoggedIn) {
+      return (
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <div className="max-w-md w-full glass-card p-8 rounded-3xl border border-white/50">
+            <div className="text-center mb-8">
+              <div className="w-20 h-20 bg-slate-100 rounded-2xl mx-auto mb-4 shadow-lg overflow-hidden border-2 border-indigo-100">
+                <img 
+                  src="k.jpg" 
+                  alt="Logo" 
+                  className="w-full h-full profile-img"
+                  onError={(e) => { e.target.src = 'https://via.placeholder.com/80?text=K'; }}
+                />
+              </div>
+              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-purple-600">GulCode Debug Hub</h1>
+              <p className="text-slate-500 mt-2">กรุณาระบุกลุ่มหรือสร้างกลุ่มใหม่</p>
+            </div>
+            <form onSubmit={handleLogin} className="space-y-5">
+              <input
+                type="text"
+                placeholder="ชื่อกลุ่มของคุณ (หรือ 'a1')"
+                value={groupName}
+                onChange={e => setGroupName(e.target.value)}
+                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
+                required
+              />
+              {groupName.trim().toLowerCase() === 'gulcode' && (
+                <input
+                  type="password"
+                  placeholder="รหัสผ่านแอดมิน"
+                  value={password}
+                  onChange={e => setPassword(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-amber-200 focus:ring-2 focus:ring-amber-500 outline-none bg-amber-50/30"
+                  required
+                />
+              )}
+              {authMsg && <p className="text-red-500 text-sm text-center font-medium">{authMsg}</p>}
+              <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition-all shadow-md">
+                เข้าสู่ระบบ
+              </button>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="max-w-6xl mx-auto p-4 md:p-6 pb-20">
+        <header className="glass-card p-5 rounded-2xl mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-3">
+             <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center overflow-hidden border border-indigo-100 shadow-sm">
+                <img 
+                  src="k.jpg" 
+                  alt="Header Logo" 
+                  className="w-full h-full profile-img"
+                  onError={(e) => { e.target.src = 'https://via.placeholder.com/48?text=K'; }}
+                />
+              </div>
+            <div>
+              <h1 className="text-xl font-bold">Debugging Log</h1>
+              <p className="text-xs text-slate-500">
+                {isAdmin ? <span className="text-amber-600 font-bold">ผู้ดูแลระบบ (เรียงตามล่าสุด)</span> : `กลุ่ม: ${groupName}`}
+              </p>
+            </div>
+          </div>
+          <button onClick={handleLogout} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors">
+            ออกจากระบบ
+          </button>
+        </header>
+
+        {msg && (
+          <div className={`p-4 mb-6 rounded-xl text-center font-bold shadow-sm animate-pulse ${msg.includes("สำเร็จ") ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+            {msg}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {!isAdmin && (
+            <div className="lg:col-span-5">
+              <div className="glass-card p-6 rounded-2xl sticky top-6">
+                <h2 className="text-lg font-bold mb-4">{editId ? "แก้ไขบันทึก" : "เพิ่มบันทึกใหม่"}</h2>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-3">
+                    <input name="mission_name" value={form.mission_name} onChange={e => setForm({...form, mission_name: e.target.value})} className="w-full p-2.5 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="ภารกิจ/ด่านที่ทำ" required />
+                    <textarea name="actual_problem" value={form.actual_problem} onChange={e => setForm({...form, actual_problem: e.target.value})} className="w-full p-2.5 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="ปัญหาที่เกิดขึ้นจริง" rows="3" required />
+                    <select value={form.bug_type} onChange={e => setForm({...form, bug_type: e.target.value})} className="w-full p-2.5 text-sm border rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
+                      <option>บั๊กคำสั่ง/ตรรกะ (Logic Bug)</option>
+                      <option>บั๊กกายภาพ/หุ่นยนต์ (Physical Bug)</option>
+                      <option>อื่นๆ</option>
+                    </select>
+                    <textarea name="solution_action" value={form.solution_action} onChange={e => setForm({...form, solution_action: e.target.value})} className="w-full p-2.5 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="แก้ปัญหาอย่างไร?" rows="2" required />
+                    <input name="reflection" value={form.reflection} onChange={e => setForm({...form, reflection: e.target.value})} className="w-full p-2.5 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="สิ่งที่เรียนรู้จากบั๊กนี้" required />
+                  </div>
+                  <button type="submit" className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-md">
+                    {editId ? "อัปเดตข้อมูล" : "บันทึกข้อมูล"}
+                  </button>
+                </form>
+              </div>
+            </div>
+          )}
+
+          <div className={isAdmin ? "lg:col-span-12" : "lg:col-span-7"}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">ประวัติการแก้ปัญหา ({logs.length})</h2>
+              {isAdmin && <span className="text-xs bg-amber-500 text-white px-2 py-1 rounded">Admin View</span>}
+            </div>
+
+            {loading ? <p className="text-center py-10">กำลังดึงข้อมูล...</p> : (
+              <div className="space-y-4">
+                {logs.length === 0 ? (
+                  <div className="text-center py-20 glass-card rounded-2xl text-slate-400">
+                    <p>ยังไม่มีข้อมูลบันทึกในขณะนี้</p>
+                  </div>
+                ) : logs.map(log => (
+                  <div key={log.id} className="glass-card p-5 rounded-2xl border border-slate-100 group relative hover:border-indigo-200 transition-all">
+                    <div className="flex justify-between items-start mb-2">
+                      <div className="flex flex-wrap gap-2">
+                        {isAdmin && <span className="bg-slate-800 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">กลุ่ม: {log.groupName}</span>}
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getBugTypeColor(log.bug_type)}`}>{log.bug_type}</span>
+                        <span className="text-[10px] text-slate-400 flex items-center gap-1">🕒 {formatDate(log.timestamp)}</span>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        {!isAdmin && (
+                          <button onClick={() => handleEdit(log)} className="text-blue-500 hover:text-blue-700 p-1">
+                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                          </button>
+                        )}
+                        <button onClick={() => handleDelete(log.id, log.groupName)} className="text-red-400 hover:text-red-600 p-1">
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                        </button>
+                      </div>
+                    </div>
+
+                    <h3 className="font-bold text-slate-800 text-lg">{log.mission_name}</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                      <div className="bg-red-50 p-3 rounded-lg border border-red-100">
+                        <p className="text-[10px] font-bold text-red-700 uppercase mb-1">ปัญหา</p>
+                        <p className="text-sm text-slate-700">{log.actual_problem}</p>
+                      </div>
+                      <div className="bg-green-50 p-3 rounded-lg border border-green-100">
+                        <p className="text-[10px] font-bold text-green-700 uppercase mb-1">การแก้ไข</p>
+                        <p className="text-sm text-slate-700">{log.solution_action}</p>
+                      </div>
+                    </div>
+                    {log.reflection && (
+                      <div className="mt-3 pt-3 border-t text-[11px] text-slate-500 italic flex items-start gap-2">
+                        <span className="shrink-0 text-amber-500">💡</span>
+                        <span>{log.reflection}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+</script>
+</body>
+</html>
