@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ใบบันทึกกระบวนการแก้ปัญหา (Debugging Log)</title>
+  
+  <!-- SEO Meta Tags สำหรับช่วยในการค้นหาบน Google -->
+  <title>Algorithmic Problem Solving through Debugging | GulCode</title>
+  <meta name="description" content="แพลตฟอร์มบันทึกการแก้ปัญหาอัลกอริทึมผ่านการแก้ไขจุดบกพร่อง (Algorithmic Problem Solving through Debugging) สำหรับนักเรียน - GulCode Debug Hub">
+  <meta name="keywords" content="การแก้ปัญหาอัลกอริทึม, แก้ไขจุดบกพร่อง, Algorithmic Problem Solving, Debugging, GulCode, Debug Hub, เขียนโปรแกรม, วิทยาการคำนวณ">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="k.jpg">
@@ -12,7 +16,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- ฟอนต์ไทย -->
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Thai:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Thai:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 
   <!-- React + ReactDOM UMD -->
   <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
@@ -26,8 +30,19 @@
   <style>
     body { 
       font-family: 'Noto Sans Thai', 'Inter', sans-serif; 
-      background-color: #f8fafc;
       color: #0f172a;
+      /* ลูกเล่นที่ 1: พื้นหลังเปลี่ยนสีแบบ Animated Gradient */
+      background: linear-gradient(-45deg, #f8fafc, #e0e7ff, #f3e8ff, #ffedd5);
+      background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    @keyframes gradientBG {
+      0% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
     }
     
     ::-webkit-scrollbar { width: 8px; }
@@ -35,17 +50,54 @@
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
 
+    /* ลูกเล่นที่ 2: กรอบกระจกแบบพรีเมียม (Glassmorphism) */
     .glass-card {
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
     }
+    
     .profile-img {
       object-fit: cover;
     }
+
+    /* ลูกเล่นที่ 3: แอนิเมชันข้อความเด้งขึ้น */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in-up {
+      animation: fadeInUp 0.8s ease-out forwards;
+    }
+    .delay-100 { animation-delay: 0.1s; }
+    .delay-200 { animation-delay: 0.2s; }
+    .delay-300 { animation-delay: 0.3s; }
+
+    /* ลูกเล่นที่ 4: วงกลมเบลอลอยด้านหลัง (Floating Orbs) */
+    .blob {
+      position: absolute;
+      filter: blur(60px);
+      z-index: -1;
+      opacity: 0.6;
+      border-radius: 50%;
+      animation: float 10s infinite ease-in-out alternate;
+    }
+    .blob-1 { top: 10%; left: 10%; width: 300px; height: 300px; background: #c7d2fe; }
+    .blob-2 { bottom: 10%; right: 10%; width: 350px; height: 350px; background: #fbcfe8; animation-delay: -5s; }
+    
+    @keyframes float {
+      0% { transform: translateY(0) scale(1); }
+      100% { transform: translateY(-40px) scale(1.1); }
+    }
   </style>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-slate-50 to-indigo-50">
+<body class="relative">
+<!-- ฉากหลังลูกเล่น -->
+<div class="blob blob-1"></div>
+<div class="blob blob-2"></div>
+
 <div id="root"></div>
 
 <script type="text/babel">
@@ -232,40 +284,72 @@
     if (!isLoggedIn) {
       return (
         <div className="min-h-screen flex items-center justify-center p-4">
-          <div className="max-w-md w-full glass-card p-8 rounded-3xl border border-white/50">
-            <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-slate-100 rounded-2xl mx-auto mb-4 shadow-lg overflow-hidden border-2 border-indigo-100">
+          <div className="max-w-xl w-full glass-card p-8 md:p-10 rounded-3xl animate-fade-in-up">
+            
+            <div className="text-center mb-8 relative">
+              {/* รูปโปรไฟล์พร้อม Effect หมุนเบาๆ */}
+              <div className="w-24 h-24 bg-white rounded-3xl mx-auto mb-6 shadow-xl shadow-indigo-200/50 overflow-hidden border-2 border-white transform transition duration-500 hover:scale-105 hover:rotate-3">
                 <img 
                   src="k.jpg" 
                   alt="Logo" 
                   className="w-full h-full profile-img"
-                  onError={(e) => { e.target.src = 'https://via.placeholder.com/80?text=K'; }}
+                  onError={(e) => { e.target.src = 'https://via.placeholder.com/96?text=K'; }}
                 />
               </div>
-              <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-700 to-purple-600">GulCode Debug Hub</h1>
-              <p className="text-slate-500 mt-2">กรุณาระบุกลุ่มหรือสร้างกลุ่มใหม่</p>
+
+              {/* จัดเรียงชื่อใหม่ให้สวยงาม */}
+              <div className="animate-fade-in-up delay-100">
+                <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 via-purple-600 to-indigo-600 leading-tight tracking-tight">
+                  Algorithmic Problem Solving
+                </h1>
+                <div className="flex items-center justify-center gap-2 mt-2">
+                  <span className="h-[2px] w-8 bg-slate-300 rounded-full"></span>
+                  <h2 className="text-lg md:text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-orange-400">
+                    through Debugging
+                  </h2>
+                  <span className="h-[2px] w-8 bg-slate-300 rounded-full"></span>
+                </div>
+              </div>
+
+              {/* ข้อความใหม่ตามที่รีเควส */}
+              <p className="text-slate-500 mt-6 font-medium bg-slate-100 inline-block px-4 py-1.5 rounded-full text-sm animate-fade-in-up delay-200">
+                ✨ กรอกชื่อกลุ่มนักเรียนเพื่อเข้าสู่ระบบ Debug Hub
+              </p>
             </div>
-            <form onSubmit={handleLogin} className="space-y-5">
-              <input
-                type="text"
-                placeholder="ชื่อกลุ่มของคุณ (หรือ 'a1')"
-                value={groupName}
-                onChange={e => setGroupName(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none"
-                required
-              />
-              {groupName.trim().toLowerCase() === 'gulcode' && (
+
+            <form onSubmit={handleLogin} className="space-y-5 animate-fade-in-up delay-300">
+              <div className="relative group">
+                <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-indigo-400 group-focus-within:text-indigo-600 transition-colors">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                </div>
                 <input
-                  type="password"
-                  placeholder="รหัสผ่านแอดมิน"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  className="w-full px-4 py-3 rounded-xl border border-amber-200 focus:ring-2 focus:ring-amber-500 outline-none bg-amber-50/30"
+                  type="text"
+                  placeholder="ชื่อกลุ่มของคุณ (ตัวอย่าง: Group A)"
+                  value={groupName}
+                  onChange={e => setGroupName(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3.5 rounded-2xl border-2 border-transparent bg-white shadow-sm focus:bg-white focus:border-indigo-400 focus:ring-4 focus:ring-indigo-100 outline-none transition-all text-slate-700 font-medium"
                   required
                 />
+              </div>
+
+              {groupName.trim().toLowerCase() === 'gulcode' && (
+                <div className="relative animate-fade-in-up">
+                   <div className="absolute inset-y-0 left-0 flex items-center pl-4 pointer-events-none text-amber-400">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                  </div>
+                  <input
+                    type="password"
+                    placeholder="รหัสผ่านผู้ดูแลระบบ"
+                    value={password}
+                    onChange={e => setPassword(e.target.value)}
+                    className="w-full pl-11 pr-4 py-3.5 rounded-2xl border-2 border-amber-200 bg-amber-50 focus:border-amber-400 focus:ring-4 focus:ring-amber-100 outline-none transition-all text-slate-700 font-medium"
+                    required
+                  />
+                </div>
               )}
-              {authMsg && <p className="text-red-500 text-sm text-center font-medium">{authMsg}</p>}
-              <button type="submit" className="w-full bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition-all shadow-md">
+              {authMsg && <p className="text-red-500 text-sm text-center font-medium bg-red-50 py-2 rounded-lg">{authMsg}</p>}
+              
+              <button type="submit" className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold py-3.5 rounded-2xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg shadow-indigo-200 transform hover:-translate-y-1">
                 เข้าสู่ระบบ
               </button>
             </form>
@@ -275,31 +359,36 @@
     }
 
     return (
-      <div className="max-w-6xl mx-auto p-4 md:p-6 pb-20">
-        <header className="glass-card p-5 rounded-2xl mb-6 flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-3">
-             <div className="w-12 h-12 bg-slate-100 rounded-xl flex items-center justify-center overflow-hidden border border-indigo-100 shadow-sm">
+      <div className="max-w-6xl mx-auto p-4 md:p-6 pb-20 animate-fade-in-up">
+        <header className="glass-card p-5 rounded-2xl mb-6 flex flex-col sm:flex-row justify-between items-center gap-4 border border-white/60">
+          <div className="flex items-center gap-4">
+             <div className="w-14 h-14 bg-white rounded-xl flex items-center justify-center overflow-hidden border border-indigo-100 shadow-md">
                 <img 
                   src="k.jpg" 
                   alt="Header Logo" 
                   className="w-full h-full profile-img"
-                  onError={(e) => { e.target.src = 'https://via.placeholder.com/48?text=K'; }}
+                  onError={(e) => { e.target.src = 'https://via.placeholder.com/56?text=K'; }}
                 />
               </div>
             <div>
-              <h1 className="text-xl font-bold">Debugging Log</h1>
-              <p className="text-xs text-slate-500">
-                {isAdmin ? <span className="text-amber-600 font-bold">ผู้ดูแลระบบ (เรียงตามล่าสุด)</span> : `กลุ่ม: ${groupName}`}
+              <h1 className="text-xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-700 to-purple-600">Algorithmic Problem Solving</h1>
+              <p className="text-sm font-medium mt-0.5 flex items-center gap-2">
+                {isAdmin ? (
+                  <span className="text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">👑 ผู้ดูแลระบบ (ล่าสุด)</span>
+                ) : (
+                  <span className="text-slate-600 bg-white px-2 py-0.5 rounded border shadow-sm">🚀 กลุ่ม: <span className="text-indigo-600 font-bold">{groupName}</span></span>
+                )}
               </p>
             </div>
           </div>
-          <button onClick={handleLogout} className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors">
+          <button onClick={handleLogout} className="px-5 py-2.5 bg-white border border-slate-200 hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-slate-700 rounded-xl text-sm font-bold transition-all shadow-sm flex items-center gap-2">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
             ออกจากระบบ
           </button>
         </header>
 
         {msg && (
-          <div className={`p-4 mb-6 rounded-xl text-center font-bold shadow-sm animate-pulse ${msg.includes("สำเร็จ") ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+          <div className={`p-4 mb-6 rounded-xl text-center font-bold shadow-md animate-fade-in-up border ${msg.includes("สำเร็จ") ? "bg-green-50 text-green-700 border-green-200" : "bg-red-50 text-red-700 border-red-200"}`}>
             {msg}
           </div>
         )}
@@ -307,22 +396,46 @@
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {!isAdmin && (
             <div className="lg:col-span-5">
-              <div className="glass-card p-6 rounded-2xl sticky top-6">
-                <h2 className="text-lg font-bold mb-4">{editId ? "แก้ไขบันทึก" : "เพิ่มบันทึกใหม่"}</h2>
+              <div className="glass-card p-6 rounded-2xl sticky top-6 border border-white/60">
+                <div className="flex items-center gap-2 mb-5">
+                  <span className="text-2xl">{editId ? "✏️" : "📝"}</span>
+                  <h2 className="text-lg font-bold text-slate-800">{editId ? "แก้ไขบันทึก" : "เพิ่มบันทึกใหม่"}</h2>
+                </div>
+                
                 <form onSubmit={handleSubmit} className="space-y-4">
-                  <div className="space-y-3">
-                    <input name="mission_name" value={form.mission_name} onChange={e => setForm({...form, mission_name: e.target.value})} className="w-full p-2.5 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="ภารกิจ/ด่านที่ทำ" required />
-                    <textarea name="actual_problem" value={form.actual_problem} onChange={e => setForm({...form, actual_problem: e.target.value})} className="w-full p-2.5 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="ปัญหาที่เกิดขึ้นจริง" rows="3" required />
-                    <select value={form.bug_type} onChange={e => setForm({...form, bug_type: e.target.value})} className="w-full p-2.5 text-sm border rounded-lg bg-white focus:ring-2 focus:ring-indigo-500 outline-none">
-                      <option>บั๊กคำสั่ง/ตรรกะ (Logic Bug)</option>
-                      <option>บั๊กกายภาพ/หุ่นยนต์ (Physical Bug)</option>
-                      <option>อื่นๆ</option>
-                    </select>
-                    <textarea name="solution_action" value={form.solution_action} onChange={e => setForm({...form, solution_action: e.target.value})} className="w-full p-2.5 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="แก้ปัญหาอย่างไร?" rows="2" required />
-                    <input name="reflection" value={form.reflection} onChange={e => setForm({...form, reflection: e.target.value})} className="w-full p-2.5 text-sm border rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none" placeholder="สิ่งที่เรียนรู้จากบั๊กนี้" required />
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">ภารกิจ / ด่าน</label>
+                      <input name="mission_name" value={form.mission_name} onChange={e => setForm({...form, mission_name: e.target.value})} className="w-full p-3 text-sm border-2 border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 outline-none transition-all bg-white/50 focus:bg-white" placeholder="เช่น ด่านที่ 1 พาหุ่นยนต์เดินหน้า..." required />
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">ปัญหาที่พบ (Bug)</label>
+                      <textarea name="actual_problem" value={form.actual_problem} onChange={e => setForm({...form, actual_problem: e.target.value})} className="w-full p-3 text-sm border-2 border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 outline-none transition-all bg-white/50 focus:bg-white" placeholder="อธิบายปัญหาที่เกิดขึ้น..." rows="3" required />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">ประเภทของปัญหา</label>
+                      <select value={form.bug_type} onChange={e => setForm({...form, bug_type: e.target.value})} className="w-full p-3 text-sm border-2 border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 outline-none transition-all bg-white cursor-pointer">
+                        <option>บั๊กคำสั่ง/ตรรกะ (Logic Bug)</option>
+                        <option>บั๊กกายภาพ/หุ่นยนต์ (Physical Bug)</option>
+                        <option>อื่นๆ</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">วิธีแก้ไขปัญหา</label>
+                      <textarea name="solution_action" value={form.solution_action} onChange={e => setForm({...form, solution_action: e.target.value})} className="w-full p-3 text-sm border-2 border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 outline-none transition-all bg-white/50 focus:bg-white" placeholder="แก้ไขอย่างไรให้ผ่านด่าน..." rows="2" required />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-slate-500 mb-1 uppercase">สิ่งที่ได้เรียนรู้ (Reflection)</label>
+                      <input name="reflection" value={form.reflection} onChange={e => setForm({...form, reflection: e.target.value})} className="w-full p-3 text-sm border-2 border-slate-200 rounded-xl focus:border-indigo-500 focus:ring-4 focus:ring-indigo-50 outline-none transition-all bg-white/50 focus:bg-white" placeholder="ได้เรียนรู้อะไรจากข้อผิดพลาดนี้..." required />
+                    </div>
                   </div>
-                  <button type="submit" className="w-full bg-indigo-600 text-white py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-md">
-                    {editId ? "อัปเดตข้อมูล" : "บันทึกข้อมูล"}
+                  
+                  <button type="submit" className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3.5 rounded-xl font-bold hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md transform hover:-translate-y-0.5 mt-2">
+                    {editId ? "💾 อัปเดตข้อมูล" : "🚀 บันทึกข้อมูล"}
                   </button>
                 </form>
               </div>
@@ -330,53 +443,74 @@
           )}
 
           <div className={isAdmin ? "lg:col-span-12" : "lg:col-span-7"}>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">ประวัติการแก้ปัญหา ({logs.length})</h2>
-              {isAdmin && <span className="text-xs bg-amber-500 text-white px-2 py-1 rounded">Admin View</span>}
+            <div className="flex justify-between items-center mb-5 bg-white/50 p-3 rounded-xl border border-white">
+              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                📂 ประวัติการแก้ปัญหา <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-lg text-sm">{logs.length}</span>
+              </h2>
+              {isAdmin && <span className="text-xs bg-gradient-to-r from-amber-500 to-orange-500 text-white px-3 py-1.5 rounded-lg font-bold shadow-sm">Admin View</span>}
             </div>
 
-            {loading ? <p className="text-center py-10">กำลังดึงข้อมูล...</p> : (
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20 text-indigo-500">
+                <svg className="animate-spin h-10 w-10 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                <p className="font-medium animate-pulse">กำลังซิงค์ข้อมูล...</p>
+              </div>
+            ) : (
               <div className="space-y-4">
                 {logs.length === 0 ? (
-                  <div className="text-center py-20 glass-card rounded-2xl text-slate-400">
-                    <p>ยังไม่มีข้อมูลบันทึกในขณะนี้</p>
+                  <div className="text-center py-20 glass-card rounded-2xl text-slate-500 border border-dashed border-slate-300">
+                    <span className="text-4xl block mb-3">👻</span>
+                    <p className="font-medium">ยังไม่มีข้อมูลบันทึกในขณะนี้</p>
+                    <p className="text-sm mt-1 text-slate-400">มาเริ่มบันทึกบั๊กแรกกันเถอะ!</p>
                   </div>
-                ) : logs.map(log => (
-                  <div key={log.id} className="glass-card p-5 rounded-2xl border border-slate-100 group relative hover:border-indigo-200 transition-all">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="flex flex-wrap gap-2">
-                        {isAdmin && <span className="bg-slate-800 text-white text-[10px] font-bold px-2 py-0.5 rounded uppercase">กลุ่ม: {log.groupName}</span>}
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${getBugTypeColor(log.bug_type)}`}>{log.bug_type}</span>
-                        <span className="text-[10px] text-slate-400 flex items-center gap-1">🕒 {formatDate(log.timestamp)}</span>
+                ) : logs.map((log, index) => (
+                  <div key={log.id} className="glass-card p-5 md:p-6 rounded-2xl border border-white group relative hover:shadow-lg hover:border-indigo-200 transition-all duration-300 animate-fade-in-up" style={{ animationDelay: `${index * 0.05}s` }}>
+                    <div className="flex justify-between items-start mb-3">
+                      <div className="flex flex-wrap gap-2 items-center">
+                        {isAdmin && <span className="bg-slate-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow-sm uppercase tracking-wider">กลุ่ม: {log.groupName}</span>}
+                        <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${getBugTypeColor(log.bug_type)} shadow-sm`}>{log.bug_type}</span>
+                        <span className="text-[11px] font-medium text-slate-400 flex items-center gap-1 bg-white px-2 py-0.5 rounded-full border">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                          {formatDate(log.timestamp)}
+                        </span>
                       </div>
                       
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity bg-white p-1 rounded-lg shadow-sm border">
                         {!isAdmin && (
-                          <button onClick={() => handleEdit(log)} className="text-blue-500 hover:text-blue-700 p-1">
+                          <button onClick={() => handleEdit(log)} className="text-blue-500 hover:text-blue-700 hover:bg-blue-50 p-1.5 rounded transition-colors" title="แก้ไข">
                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                           </button>
                         )}
-                        <button onClick={() => handleDelete(log.id, log.groupName)} className="text-red-400 hover:text-red-600 p-1">
+                        <button onClick={() => handleDelete(log.id, log.groupName)} className="text-red-400 hover:text-red-600 hover:bg-red-50 p-1.5 rounded transition-colors" title="ลบ">
                           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                         </button>
                       </div>
                     </div>
 
-                    <h3 className="font-bold text-slate-800 text-lg">{log.mission_name}</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
-                      <div className="bg-red-50 p-3 rounded-lg border border-red-100">
-                        <p className="text-[10px] font-bold text-red-700 uppercase mb-1">ปัญหา</p>
-                        <p className="text-sm text-slate-700">{log.actual_problem}</p>
+                    <h3 className="font-bold text-slate-800 text-lg flex items-center gap-2">
+                      <span className="text-indigo-500">📌</span> {log.mission_name}
+                    </h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                      <div className="bg-red-50/80 p-4 rounded-xl border border-red-100 relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-1 h-full bg-red-400"></div>
+                        <p className="text-[10px] font-bold text-red-600 uppercase mb-1.5 tracking-wider flex items-center gap-1">
+                          <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg> ปัญหาที่พบ
+                        </p>
+                        <p className="text-sm text-slate-700 leading-relaxed">{log.actual_problem}</p>
                       </div>
-                      <div className="bg-green-50 p-3 rounded-lg border border-green-100">
-                        <p className="text-[10px] font-bold text-green-700 uppercase mb-1">การแก้ไข</p>
-                        <p className="text-sm text-slate-700">{log.solution_action}</p>
+                      <div className="bg-green-50/80 p-4 rounded-xl border border-green-100 relative overflow-hidden">
+                         <div className="absolute top-0 left-0 w-1 h-full bg-green-400"></div>
+                        <p className="text-[10px] font-bold text-green-600 uppercase mb-1.5 tracking-wider flex items-center gap-1">
+                           <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg> การแก้ไข
+                        </p>
+                        <p className="text-sm text-slate-700 leading-relaxed">{log.solution_action}</p>
                       </div>
                     </div>
                     {log.reflection && (
-                      <div className="mt-3 pt-3 border-t text-[11px] text-slate-500 italic flex items-start gap-2">
-                        <span className="shrink-0 text-amber-500">💡</span>
-                        <span>{log.reflection}</span>
+                      <div className="mt-4 pt-3 border-t border-slate-100 text-xs text-slate-600 font-medium flex items-start gap-2 bg-slate-50 p-3 rounded-lg">
+                        <span className="shrink-0 text-amber-500 text-sm">💡</span>
+                        <span className="leading-relaxed">"{log.reflection}"</span>
                       </div>
                     )}
                   </div>
